@@ -1,0 +1,42 @@
+Javascript is a single-threaded language. This effectively means that it is not capable of running several blocks of code simultaneously.
+
+
+In this example, we see a script with 3 functions called one by one. The next function is called when the previous one has finished.
+All the functions are added to the stack. As you probably know, stack is a data structure that makes use of LIFO appproach (last in first out).
+The last function added to the stack is removed first. It's much more obvious with nested function calls.
+
+Here's another example. Function calls are nested this time and they stack up until the very last one is executed. After which the stack will be cleared.
+The console.log() statements usually take almost no time to execute. But if you have a for or a while loop in your code, they may block the execution for some time.
+
+When we implement a web-application with a single-threaded language, there are a few potential problems.
+If the function we are calling takes a long time to complete, we may observe some unwanted behavior of the web-page.
+First-off, we may just have to wait a long time till the function is executed before some content rendered by the next function can be displayed.
+Because of how the browsers are designed, the user interface may be completely blocked by the occupied call stack. This is often referred to as the blocking code or blocking script.
+Finally, iterating over a huge array may result in a stack overflow, which means the browser can no longer run your code.
+
+There are a few time-consuming operations when working with web-applications. Web requests is a request to a remote web server does not guarantee any response time.
+Due to the poor routing or server overload you may not receive any response at all. This would result in complete freeze of your webpage or the browser.
+The same applies to image loading which takes up to 50% of the web traffic. Lastly, if you have an array with 100 000 elements, the call stack will be occupied for a while
+and all the user interactions with the browser will be unavailable.
+
+Despite the fact that Javascript is a single-threaded language, it still uses async calls with the help of the runtime environment.
+A runtime environment is, simply speaking, the context in which your code is executed. It could be a web-brower, a server or an application.
+Same goes with Node.js;
+
+So what is going on when we call a setTimeout function? When the API receives the function call, it starts the timer and once the countdown is finished, passes the callback function to the task queue.
+Queue is another data structure you already familiar with. It utilizes the FIFO method which stands for First [item] In First [item] Out.
+The main goal of the task que is to maintain the order in which the tasks should be passed to the call stack.
+Once the call stack is empty, the first item of the task queue is passed to the call stack for execution. So far looks pretty straightforward, right?
+Unfortunately, it's a little more complicated.
+
+When running a web app, the event loop uses not one, but multiple task queues. For example, event handling tasks and timeouts are placed in different queues,
+even though they are both refferred to as the "Task Queue". There are two other types of queues that the event loop works with. Animation Callbacks, Microtasks.
+
+In case of DOM events, the event listener sits in the web APIs environment waiting for a certain event (click event for example) to happen,
+and when that event fires the callback function is placed in the task queue waiting to be picked up by the event loop and executed.
+Animation callbacks is a completely different story. We will not be covering them in-depth today, but basically, the browser puts animation callbacks
+to a separate queue and renders or repaints the page when necessary.
+
+Micro-tasks were introduced in ES6 and are dedicated to handling Promises.
+Event loop is a process that constantly checks the state of the call stack and the queues. One increment of the event loop is called the "Tick". Let's look closer at the Tick.
+Here's a piece of pseudo-code showing the logic of the event loop iteration.
