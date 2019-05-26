@@ -25,99 +25,339 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
+				<!-- SLIDE 1 -->
 				<section>
-					<h2>Canvas</h2>
+					<h2>Event Loops</h2>
+				</section>
+				<!-- SLIDE 2 -->
+				<section>
+					<h2>JS is single-threaded</h2>
+					<p class="fragment fade-in">One piece of code at a time</p>
+					<p class="fragment fade-in">Every function call is added to the call stack</p>
 					<aside class="notes">
-							Canvas is a 2D drawing API added to HTML and supported by most browsers.
-							Canvas allows you to draw anything you want directly in the web browser without the use of plugins like Flash or Java.
-							Essentially the browser gives you a rectanglar area on the screen that you can draw into. You can draw lines, shapes, images, text, etc.
+						Javascript is a single-threaded language. This effectively means that it is not capable of running several blocks of code simultaneously.
+				</aside>
+				</section>
+				<!-- SLIDES 3-5 -->
+				<section>
+					<section>
+						<h4>Call Stack</h4>
+						<img src="images/animation.gif">
+						<aside class="notes">
+							In this example, we see a script with 3 functions called one by one. The next function is called when the previous one has finished.
+
+							All the functions are added to the stack. As you probably know, stack is a data structure that makes use of LIFO appproach (last in first out). The last function added to the stack
+							is removed first. It's much more obvious with nested function calls.
+						</aside>
+					</section>
+					<section>
+							<h4>Nested Call Stack</h4>
+							<img src="images/nested call-stack.jpg">
+						<aside class="notes">
+								Here's another example. Function calls are nested this time and they stack up until the very last one is executed. After which the stack will be cleared.
+
+								The console.log() statements usually take almost no time to execute. But if you have a for or a while loop in your code, they may block the execution for some time.
+						</aside>
+					</section>
+				</section>
+				<!-- SLIDES 6- -->
+				<section>
+					<section>
+						<h2>Why this approach doesn't always work?</h2>
+						<aside class="notes">
+								When we implement a web-application with a single-threaded language, there are a few potential problems.
+						</aside>
+					</section>
+					<section>
+							<h3>Problems</h3>
+							<ul>
+								<li class="fragment fade-in" style="color: red">May take a long time to execute</p>
+								<li class="fragment fade-in" style="color: red">Any task running blocks any interaction with the web-browser (blocking script)</p>
+								<li class="fragment fade-in" style="color: red">Affects the user experience</p>
+							</ul>
+						<aside class="notes">
+								If the function we are calling takes a long time to complete, we may observe some unwanted behavior of the web-page.
+
+								First-off, we may just have to wait a long time till the function is executed before some content rendered by the next function can be displayed.
+								Because of how the browsers are designed, the user interface may be completely blocked by the occupied call stack.
+								This is often referred to as the blocking code or blocking script.
+
+								Finally, iterating over a huge array may result in a stack overflow, which means the browser can no longer run your code.
+						</aside>
+					</section>
+					<section>
+							<h3>Time-consuming operations</h3>
+							<ul>
+								<li class="fragment fade-in">Web requests</p>
+								<li class="fragment fade-in">Image requests</p>
+								<li class="fragment fade-in">Processing a lot of data</p>
+							</ul>
+						<aside class="notes">
+								There are a few time-consuming operations when working with web-applications.
+
+								Web requests is a request to a remote web server does not guarantee any response time. Due to the poor routing or server overload you may not receive any response at all.
+								This would result in complete freeze of your webpage or the browser. The same applies to image loading which takes up to 50% of the web traffic.
+
+								Lastly, if you have an array with 100 000 elements, the call stack will be occupied for a while and all the user interactions with the browser will be unavailable.
+						</aside>
+					</section>
+					<section>
+						<img src="images/were-doomed.jpg">
+						<p class="fragment fade-in">not really...</p>
+					</section>
+				</section>
+				<section>
+					<section>
+							<h3>Asynchronous calls</h3>
+							<p class="fragment fade-in">Uses runtime environment</p>
+						<aside class="notes">
+								Despite the fact that Javascript is a single-threaded language, it still uses async calls with the help of the runtime environment.
+								A runtime environment is, simply speaking, the context in which your code is executed. It could be a web-brower, a server or an application.
+						</aside>
+					</section>
+					<section>
+							<h3>Browser (WEB APIs)</h3>
+							<ul>
+								<li class="fragment fade-in">DOM Events (click, etc)</li>
+								<li class="fragment fade-in">XMLHttpRequests(AJAX)</li>
+								<li class="fragment fade-in">Timers(setTimeout(), setInterval())</li>
+							</ul>
+						<aside class="notes">
+						</aside>
+					</section>
+					<section>
+							<h3>Node.js</h3>
+							<ul>
+								<li class="fragment fade-in">C/C++ APIs</li>
+								<li class="fragment fade-in">Libraries</li>
+							</ul>
+						<aside class="notes">
+								Same goes to Node.js;
+						</aside>
+					</section>
+					<section>
+							<h4>Web APIs</h4>
+							<img src="images/animation2.gif">
+						<aside class="notes">
+								So what is going on when we call a setTimeout function? When the API receives the function call, it starts the timer and once the countdown is finished, passes the callback function to the task queue.
+
+								Queue is another data structure you already familiar with. It utilizes the FIFO method which stands for First [item] In First [item] Out. The main goal of the task que is to maintain
+								the order in which the tasks should be passed to the call stack.
+								Once the call stack is empty, the first item of the task queue is passed to the call stack for execution.
+								So far looks pretty straightforward, right? Unfortunately, it's a little more complicated.
+						</aside>
+					</section>
+					<section>
+						<img src="images/complicated.jpg">
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Queues</h2>
+						<p class="fragment fade-in">Different priorities (up to the browser)</p>
+						<p class="fragment fade-in">3 categories of queques to handle async calls</p>
+						<ol>
+							<li	class="fragment fade-in">Tasks</li>
+							<li	class="fragment fade-in">Animation Callbacks</li>
+							<li	class="fragment fade-in">Microtasks</li>
+						</ol>
+						<aside class="notes">
+							When running a web app, the event loop uses not one, but multiple task queues. For example, event handling tasks and timeouts are placed in different queues, even though they are both refferred to as
+							the "Task Queue".
+
+							There are two other types of queues that the event loop works with.
+
+							Animation Callbacks, Microtasks.
+						</aside>
+					</section>
+					<section>
+						<h3>1 - Tasks</h3>
+						<ul>
+							<li class="fragment fade-in">DOM events (higher priority usually)</li>
+							<li class="fragment fade-in">setTimeout()</li>
+							<li class="fragment fade-in">setInterval()</li>
+						</ul>
+						<aside class="notes">
+								In case of DOM events, the event listener sits in the web APIs environment waiting for a certain event (click event for example)
+								to happen, and when that event fires the callback function is placed in the task queue waiting to be picked up by the event loop and executed.
+						</aside>
+					</section>
+					<section>
+						<h3>2 - Animation callbacks</h3>
+						<ul>
+							<li class="fragment fade-in">requestAnimationFrame()</li>
+							<li class="fragment fade-in">Page resize and other events affecting the display</li>
+							<li class="fragment fade-in">GIF rendering</li>
+						</ul>
+						<aside class="notes">
+								Animation callbacks is a completely different story. We will not be covering them in-depth today, but basically,
+								the browser puts animation callbacks to a separate queue and renders or repaints the page when necessary.
+						</aside>
+					</section>
+					<section>
+						<h3>Micro-tasks</h3>
+						<p class="fragment fade-in">Mostly promises</p>
+						<aside class="notes">
+								Micro-tasks were introduced in ES6 and are dedicated to handling Promises.
+						</aside>
+					</section>
+					<section>
+						<h4>The 3 queues</h4>
+						<img src="images/animation-3.gif">
+					</section>
+					</section>
+				</section>
+				<section>
+					<section>
+						<p>So what does the event loop actually do?</p>
+					</section>
+					<section>
+						<h4>The event loop</h4>
+						<img src="images/event loop diag.jpg">
+						<aside class="notes">
+							Event loop is a process that constantly checks the state of the call stack and the queues. One increment of the event loop is called the "Tick". Let's look closer at the Tick.
+						</aside>
+					</section>
+					<section>
+						<h4>Event loop iteration (tick)</h4>
+						<pre><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-18">
+							while(appIsRunning) {
+								while (microtasksQueue.hasTasks()) {
+									doTask(microTask);
+								}
+
+								if (taskQueue.hasTasks()) {
+									currentTask = taskQueue.shift();
+									doTask(currentTask);
+								}
+
+								if (animationQueue.hastasks()) {
+									currentTasks = animationQueue;
+									for (e in currentTasks) {
+										doTask(e);
+									}
+									render();
+								}
+							}
+						</code></pre>
+						<aside class="notes">
+							Here's a piece of pseudo-code showing the logic of the event loop iteration.
+						</aside>
+					</section>
+
+					<section>
+						<h4>The event loop</h4>
+						<img src="images/event loop.jpg">
+					</section>
+					<aside class="notes">
+						Let's move on to some code examples.
 					</aside>
 				</section>
+				<section>
+					<section>
+						<h2>Code</h2>
+					</section>
+					<section>
+							<h4>The classic</h4>
+							<pre><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-18">
+									const bar = () => console.log('bar')
 
-				<section>
-					<h2>Canvas</h2>
-					<pre><code data-trim data-noescape data-line-numbers="1-4">
-							const canvas = document.getElementById('canvas');
-							const ctx = canvas.getContext('2d');
-							ctx.fillStyle = "green";
-							ctx.fillRect(100,100,300,300);
-					</code></pre>
-					<canvas width="500" height="500" id="canvas"></canvas>
-  					<script>
-    					const canvas = document.getElementById('canvas');
-    					const ctx = canvas.getContext('2d');
-    					ctx.fillStyle = "green";
-    					ctx.fillRect(100,100,300,300);
-  					</script>
-					<aside class="notes">
-							This is an example of what some Canvas code looks like where the square is drawn by <b>context.fillRect()</b> function.
-							It's important to understand that <strong>Canvas is for drawing pixels</strong>.
-							It has no shapes or vectors. There are no objects to attach event handlers to.
-					</aside>
-				</section>
+									const baz = () => console.log('baz')
 
-				<section>
-					<h2>Canvas</h2>
-					<aside class="notes">
-							Canvas is a 2D drawing API added to HTML and supported by most browsers.
-							Canvas allows you to draw anything you want directly in the web browser without the use of plugins like Flash or Java.
-					</aside>
-				</section>
+									const foo = () => {
+									  console.log('foo')
+									  setTimeout(bar, 0)
+									  baz()
+									}
 
-				<section>
-					<h2>Canvas</h2>
-					<aside class="notes">
-							Canvas is a 2D drawing API added to HTML and supported by most browsers.
-							Canvas allows you to draw anything you want directly in the web browser without the use of plugins like Flash or Java.
-					</aside>
-				</section>
+									foo()
+							</code></pre>
+							<p class="fragment fade-in">And the output is...</p>
+							<pre class="fragment fade-in"><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-3">
+								//foo
+								//baz
+								//bar
+							</code></pre>
+					</section>
+					<section>
+						<h4>A little trickier example</h4>
+						<pre><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-18">
+								console.log('Script start');
 
+								setTimeout(() => {
+								  console.log('setTimeout');
+								}, 0);
 
+								new Promise((resolve, reject) => {
+								    resolve('Promise resolved');
+								  }).then(res => console.log(res))
+										.catch(err => console.log(err));
 
+								console.log('Script End');
+						</code></pre>
+						<p class="fragment fade-in">...wait for it...</p>
+						<pre class="fragment fade-in"><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-4">
+							//Script start
+							//Script End
+							//Promise resolved
+							//setTimeout
+						</code></pre>
+					</section>
 
-				<section>Slide 2</section>
-				<section>
-					<pre><code data-trim data-noescape data-line-numbers="2-4">
-				(def lazy-fib
-				  (concat
-				   [0 1]
-				   <mark>((fn rfib [a b]</mark>
-						(lazy-cons (+ a b) (rfib b (+ a b)))) 0 1)))
-					</code></pre>
+					<section>
+						<h4>Another example</h4>
+						<pre><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-18">
+							const nextListItem = function(item) {
+								item.doSomething()
+
+									if (item) {
+											nextListItem();
+									}
+							};
+						</code></pre>
+						<p class="fragment fade-in">If the array is too large, we may not be able to process all the elements</p>
+						<img src="images/maximum-call-stack.jpg" class="fragment fade-in" style="width: 850px;">
+					</section>
+
+					<section>
+						<h4>Use of async</h4>
+						<pre><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-18">
+							const nextListItem = function(item) {
+
+								item.doSomething();
+									if (item) {
+											setTimeOut(nextListItem, 0);
+									}
+							};
+						</code></pre>
+						<p class="fragment fade-in">The recursion is handled by the task queue, not the call stack!</p>
+					</section>
+
+					<section>
+						<p>Cool! We could do the same with a promise, right?</p>
+
+						<pre><code style="font-size: 16px; line-height: 22px"  data-trim data-noescape data-line-numbers="1-18">
+							const nextListItem = function(item) {
+									item.doSomething();
+
+									if (item) {
+											Promise.resolve()
+												.then(nextListItem);
+									}
+							};
+						</code></pre>
+					</section>
+
+					<section>
+						<img src="images/inf-loop.jpg">
+						<h4 class="fragment fade-in">OOPS!</h4>
+					</section>
 				</section>
 				<section>
-					<video class="stretch" src="http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"></video>
+						<h4 class="fragment fade-in">Conclusion</h4>
 				</section>
 				<section>
-					<p class="fragment grow">grow</p>
-					<p class="fragment shrink">shrink</p>
-					<p class="fragment fade-out">fade-out</p>
-					<p class="fragment fade-up">fade-up (also down, left and right!)</p>
-					<p class="fragment fade-in-then-out">fades in, then out when we move to the next step</p>
-					<p class="fragment fade-in-then-semi-out">fades in, then obfuscate when we move to the next step</p>
-					<p class="fragment highlight-current-blue">blue only once</p>
-					<p class="fragment highlight-red">highlight-red</p>
-					<p class="fragment highlight-green">highlight-green</p>
-					<p class="fragment highlight-blue">highlight-blue</p>
-				</section>
-				<section>
-					<span class="fragment fade-in">
-						<span class="fragment fade-out">I'll fade in, then out</span>
-					</span>
-					<span class="fragment fade-in">
-						<img class="fragment fade-out" src="./images/portfolio_1.jpeg" alt="doll">
-					</span>
-					<span class="fragment fade-in">
-						<img class="fragment fade-out" src="./images/portfolio_2.jpeg" alt="doll">
-					</span>
-					<span class="fragment fade-in">
-							<img class="fragment fade-out" src="./images/portfolio_3.jpeg" alt="doll">
-					</span>
-				</section>
-				<section>
-					<p class="fragment" data-fragment-index="3">Appears last</p>
-					<p class="fragment" data-fragment-index="1">Appears first</p>
-					<p class="fragment" data-fragment-index="2">Appears second</p>
+						<h4 class="fragment fade-in">Thank you for attention</h4>
 				</section>
 			</div>
 		</div>
@@ -143,3 +383,5 @@
 		</script>
 	</body>
 </html>
+
+
